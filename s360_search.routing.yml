@@ -1,0 +1,21 @@
+s360_search.settings_form:
+  path: '/admin/config/search/s360-search'
+  defaults:
+    _form: '\Drupal\s360_search\Form\S360SearchSettingsForm'
+    _title: 'S360 Search Settings'
+  requirements:
+    _permission: 'administer site configuration'
+
+s360_search.node_search_index:
+  path: '/node/{node}/search_index'
+  defaults:
+    _controller: '\Drupal\s360_search\Controller\SearchIndexController::viewSearchIndex'
+    _title: 'Search Index'
+  requirements:
+    _permission: 'view search index preview'
+    node: \d+
+  options:
+    parameters:
+      node:
+        type: entity:node
+

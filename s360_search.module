@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * @file
+ * Contains s360_search.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function s360_search_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.s360_search':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Provides search index display functionality with custom permissions.') . '</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_entity_prepare_view().
+ */
+function s360_search_entity_prepare_view($entity_type_id, array $entities, array $displays) {
+  // Only process nodes.
+  if ($entity_type_id !== 'node') {
+    return;
+  }
+
+  // Get excluded paragraph types from configuration.
+  $config = \Drupal::config('s360_search.settings');
+  $excluded_types = $config->get('exclude_paragraph_types');
+
+  if (empty($excluded_types)) {
+    return;
+  }
+
+  foreach ($entities as $entity) {
+    // Only process if the display mode is search_index.
+    $display = $displays[$entity->bundle()];
+    if ($display->getMode() !== 'search_index') {
+      continue;
+    }
+
+    // Iterate through all fields in the node.
+    foreach ($entity->getFieldDefinitions() as $field_name => $field_definition) {
+      // Check if this is an entity reference revisions field (paragraphs).
+      if ($field_definition->getType() === 'entity_reference_revisions' && $entity->hasField($field_name)) {
+        /** @var \Drupal\entity_reference_revisions\EntityReferenceRevisionsFieldItemList $field_items */
+        $field_items = $entity->get($field_name);
+        $filtered_items = [];
+
+        foreach ($field_items as $delta => $item) {
+          if ($item->entity) {
+            $paragraph = $item->entity;
+            $bundle = $paragraph->bundle();
+
+            // Check if this paragraph should be excluded.
+            if (!in_array($bundle, $excluded_types)) {
+              // Keep this item - extract the values we need.
+              $filtered_items[] = [
+                'target_id' => $item->target_id,
+                'target_revision_id' => $item->target_revision_id,
+              ];
+            }
+          }
+        }
+
+        // Replace the field values with filtered items.
+        if (count($filtered_items) !== count($field_items)) {
+          $entity->set($field_name, $filtered_items);
+        }
+      }
+    }
+  }
+}

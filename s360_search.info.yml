@@ -1,0 +1,5 @@
+name: 'S360 Search'
+type: module
+description: 'Provides search index display functionality with custom permissions.'
+core_version_requirement: ^9 || ^10 || ^11
+package: 'Custom'

@@ -1,0 +1,6 @@
+s360_search.node_search_index_tab:
+  route_name: s360_search.node_search_index
+  base_route: entity.node.canonical
+  title: 'Search Index'
+  weight: 100
+

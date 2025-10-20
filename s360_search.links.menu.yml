@@ -1,0 +1,7 @@
+s360_search.settings:
+  title: 'S360 Search'
+  route_name: s360_search.settings_form
+  description: 'Configure search index settings including paragraph exclusions.'
+  parent: system.admin_config_search
+  weight: 10
+
